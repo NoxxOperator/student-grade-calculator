@@ -19,8 +19,8 @@ import java.util.Map;
  */
 public class StudentGradeServer {
     private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "8765"));
-    private static final String[] SUBJECT_IDS = {"java", "maths", "english", "dbms", "networks"};
-    private static final String[] SUBJECT_NAMES = {"Java", "Mathematics", "English", "DBMS", "Computer Networks"};
+    private static final String[] SUBJECT_IDS = {"dsgt", "cm", "os", "ads", "networks"};
+    private static final String[] SUBJECT_NAMES = {"DSGT", "CM", "OS", "ADS", "Computer Networks"};
 
     public static void main(String[] args) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress("0.0.0.0", PORT), 0);
