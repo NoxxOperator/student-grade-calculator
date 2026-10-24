@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Grade Calculator</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root { --navy:#1f3557; --navy-dark:#172943; --teal:#2a9d8f; --bg:#f4f7fb; --text:#243247; --muted:#718096; --border:#e2e8f0; --white:#fff; }
+    body { margin:0; font-family:Arial,Helvetica,sans-serif; background:var(--bg); color:var(--text); }
+    header { background:linear-gradient(120deg,var(--navy-dark),var(--navy)); color:white; padding:28px 20px 30px; }
+    .header-inner, main { width:min(1120px,calc(100% - 32px)); margin:0 auto; }
+    .brand { display:flex; align-items:center; gap:14px; }
+    .brand-icon { width:48px; height:48px; display:grid; place-items:center; border-radius:14px; background:rgba(255,255,255,.13); font-size:25px; }
+    h1 { margin:0; font-size:clamp(21px,3vw,29px); letter-spacing:.5px; }
+    header p { margin:8px 0 0; color:#d9e4f3; font-size:14px; }
+    main { padding:30px 0 42px; }
+    .layout { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr); gap:22px; align-items:start; }
+    .card { background:var(--white); border:1px solid var(--border); border-radius:17px; box-shadow:0 8px 24px rgba(31,53,87,.055); padding:25px; }
+    .card h2 { margin:0 0 7px; font-size:19px; color:var(--navy); }
+    .subheading { margin:0 0 22px; color:var(--muted); font-size:13px; line-height:1.5; }
+    label { display:block; font-size:13px; font-weight:700; margin-bottom:8px; }
+    input { width:100%; padding:12px 13px; border:1px solid #d7e0eb; border-radius:9px; font:inherit; font-size:14px; color:var(--text); outline:none; background:#fff; }
+    input:focus { border-color:var(--teal); box-shadow:0 0 0 3px rgba(42,157,143,.12); }
+    .section-label { margin:25px 0 13px; color:var(--navy); font-size:14px; font-weight:700; }
+    .subject-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(110px,145px); gap:15px; align-items:center; padding:12px 0; border-bottom:1px solid #edf1f6; }
+    .subject-row:last-of-type { border-bottom:0; } .subject-name { font-size:14px; font-weight:600; margin:0; }
+    .mark-wrap { position:relative; } .mark-wrap input { padding-right:48px; }
+    .suffix { position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:12px; color:var(--muted); pointer-events:none; }
+    .button-row { display:flex; gap:10px; margin-top:24px; }
+    button { border:0; border-radius:10px; padding:13px 17px; font:inherit; font-weight:700; cursor:pointer; transition:transform .15s,background .15s; }
+    button:hover { transform:translateY(-1px); } .primary { flex:1; background:var(--navy); color:white; } .primary:hover { background:var(--navy-dark); }
+    .secondary { background:#edf2f7; color:var(--navy); }
+    .message { display:none; margin-top:14px; padding:11px 13px; border-radius:9px; font-size:13px; line-height:1.45; }
+    .message.error { display:block; color:#9b2c2c; background:#fff0f0; }
+    .result-card { min-height:300px; } .empty-state { text-align:center; padding:24px 8px 22px; color:var(--muted); }
+    .empty-icon { display:grid; place-items:center; width:84px; height:84px; margin:0 auto 15px; border-radius:50%; background:#edf7f6; font-size:37px; }
+    .empty-state strong { display:block; color:var(--navy); margin-bottom:8px; font-size:15px; }
+    .empty-state p { max-width:280px; margin:0 auto; font-size:13px; line-height:1.6; }
+    .results { display:none; } .student-line { display:flex; justify-content:space-between; gap:12px; padding:13px 0 17px; border-bottom:1px solid var(--border); font-size:14px; }
+    .student-line span { color:var(--muted); } .student-line strong { overflow-wrap:anywhere; text-align:right; }
+    .stats { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:17px 0; }
+    .stat { background:#f6f9fc; border:1px solid #e9eef5; border-radius:12px; padding:15px; }
+    .stat span { display:block; color:var(--muted); font-size:12px; margin-bottom:7px; } .stat strong { font-size:23px; color:var(--navy); }
+    .grade-row,.status-row { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #edf1f6; font-size:14px; }
+    .grade-value { font-size:20px; font-weight:800; color:var(--navy); }
+    .status-pill { display:inline-block; padding:6px 11px; border-radius:999px; background:#e4f7ed; color:#187447; font-weight:700; font-size:12px; }
+    .status-pill.fail { background:#fff0f0; color:#b42318; }
+    .scale-card { margin-top:22px; } .scale-card h2 { margin-bottom:17px; }
+    .scale-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #edf1f6; font-size:13px; }
+    .scale-row:last-child { border-bottom:0; } .scale-row strong { color:var(--navy); }
+    footer { text-align:center; padding:18px; color:var(--muted); font-size:12px; }
+    .small-note { margin-top:14px; color:var(--muted); font-size:12px; line-height:1.5; }
+    @media(max-width:760px) { .layout { grid-template-columns:1fr; } .card { padding:21px; } main { padding-top:20px; } }
+    @media(max-width:420px) { .subject-row { grid-template-columns:minmax(0,1fr) 112px; gap:10px; } .card { padding:17px; } .button-row { flex-direction:column; } }
+  </style>
+</head>
+<body>
+  <header><div class="header-inner"><div class="brand"><div class="brand-icon" aria-hidden="true">🎓</div><div><h1>STUDENT GRADE CALCULATOR</h1><p>Calculate your academic performance</p></div></div></div></header>
+  <main>
+    <div class="layout">
+      <section class="card">
+        <h2>Student Details</h2><p class="subheading">Enter the student's name and marks for each subject.</p>
+        <form id="gradeForm">
+          <label for="studentName">Student Name</label><input id="studentName" name="studentName" type="text" placeholder="Enter student name" maxlength="80" required>
+          <div class="section-label">Subject Marks</div>
+          <div class="subject-row"><label class="subject-name" for="java">Java</label><div class="mark-wrap"><input id="java" name="java" type="number" min="0" max="100" step="1" placeholder="0 – 100" required><span class="suffix">/ 100</span></div></div>
+          <div class="subject-row"><label class="subject-name" for="maths">Mathematics</label><div class="mark-wrap"><input id="maths" name="maths" type="number" min="0" max="100" step="1" placeholder="0 – 100" required><span class="suffix">/ 100</span></div></div>
+          <div class="subject-row"><label class="subject-name" for="english">English</label><div class="mark-wrap"><input id="english" name="english" type="number" min="0" max="100" step="1" placeholder="0 – 100" required><span class="suffix">/ 100</span></div></div>
+          <div class="subject-row"><label class="subject-name" for="dbms">DBMS</label><div class="mark-wrap"><input id="dbms" name="dbms" type="number" min="0" max="100" step="1" placeholder="0 – 100" required><span class="suffix">/ 100</span></div></div>
+          <div class="subject-row"><label class="subject-name" for="networks">Computer Networks</label><div class="mark-wrap"><input id="networks" name="networks" type="number" min="0" max="100" step="1" placeholder="0 – 100" required><span class="suffix">/ 100</span></div></div>
+          <div id="errorMessage" class="message" role="alert"></div>
+          <div class="button-row"><button class="primary" id="calculateButton" type="submit">▦ &nbsp; Calculate Result</button><button class="secondary" type="reset">Reset</button></div>
+          <p class="small-note">The result is calculated by the Java backend running on your computer.</p>
+        </form>
+      </section>
+      <div>
+        <section class="card result-card" aria-live="polite">
+          <h2>Your Result</h2><p class="subheading">Your calculated result will appear here.</p>
+          <div id="emptyState" class="empty-state"><div class="empty-icon" aria-hidden="true">📋</div><strong>Your result will appear here</strong><p>Enter your marks and calculate to see your total, percentage, grade and status.</p></div>
+          <div id="results" class="results">
+            <div class="student-line"><span>Student Name</span><strong id="resultName">—</strong></div>
+            <div class="stats"><div class="stat"><span>Total Marks</span><strong id="resultTotal">0/500</strong></div><div class="stat"><span>Percentage</span><strong id="resultPercentage">0.00%</strong></div></div>
+            <div id="subjectResults"></div>
+            <div class="grade-row"><span>Final Grade</span><strong id="resultGrade" class="grade-value">—</strong></div>
+            <div class="status-row"><span>Result Status</span><strong id="resultStatus" class="status-pill">PASS</strong></div>
+          </div>
+        </section>
+        <section class="card scale-card"><h2>Grading Scale</h2><div class="scale-row"><strong>A+</strong><span>90–100%</span></div><div class="scale-row"><strong>A</strong><span>80–89.99%</span></div><div class="scale-row"><strong>B</strong><span>70–79.99%</span></div><div class="scale-row"><strong>C</strong><span>60–69.99%</span></div><div class="scale-row"><strong>D</strong><span>50–59.99%</span></div><div class="scale-row"><strong>F</strong><span>Below 50% or any subject below 35</span></div><p class="subheading" style="margin:14px 0 0">Passing rule: at least 35 marks in every subject.</p></section>
+      </div>
+    </div>
+  </main>
+  <footer>Student Grade Calculator · Java + HTML educational mini project</footer>
+  <script>
+    const form = document.getElementById('gradeForm');
+    const errorMessage = document.getElementById('errorMessage');
+    const emptyState = document.getElementById('emptyState');
+    const results = document.getElementById('results');
+    const button = document.getElementById('calculateButton');
+    const subjectIds = ['java', 'maths', 'english', 'dbms', 'networks'];
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      showError('');
+      for (const id of subjectIds) {
+        const input = document.getElementById(id);
+        if (input.value.trim() === '' || !Number.isInteger(Number(input.value)) || Number(input.value) < 0 || Number(input.value) > 100) {
+          showError('Enter a whole number from 0 to 100 for every subject.');
+          input.focus();
+          return;
+        }
+      }
+      button.disabled = true;
+      button.textContent = 'Calculating…';
+      try {
+        const response = await fetch('/calculate', { method: 'POST', body: new URLSearchParams(new FormData(form)) });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Unable to calculate the result.');
+        document.getElementById('resultName').textContent = data.name;
+        document.getElementById('resultTotal').textContent = `${data.total}/500`;
+        document.getElementById('resultPercentage').textContent = `${Number(data.percentage).toFixed(2)}%`;
+        document.getElementById('resultGrade').textContent = data.grade;
+        const status = document.getElementById('resultStatus');
+        status.textContent = data.status;
+        status.className = data.status === 'PASS' ? 'status-pill' : 'status-pill fail';
+        const subjectResults = document.getElementById('subjectResults');
+        subjectResults.replaceChildren();
+        data.subjects.forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'grade-row';
+          const label = document.createElement('span');
+          label.textContent = item.subject;
+          const mark = document.createElement('strong');
+          mark.textContent = `${item.marks}/100`;
+          row.append(label, mark);
+          subjectResults.append(row);
+        });
+        emptyState.style.display = 'none';
+        results.style.display = 'block';
+      } catch (error) {
+        showError(error.message || 'Could not connect to the Java server. Make sure StudentGradeServer is running.');
+      } finally {
+        button.disabled = false;
+        button.innerHTML = '▦ &nbsp; Calculate Result';
+      }
+    });
+
+    form.addEventListener('reset', () => {
+      showError('');
+      results.style.display = 'none';
+      emptyState.style.display = 'block';
+    });
+
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.className = message ? 'message error' : 'message';
+    }
+  </script>
+</body>
+</html>
